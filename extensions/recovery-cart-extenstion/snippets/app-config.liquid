@@ -1,0 +1,16 @@
+{% comment %}
+  App Config Snippet
+  Usage: {% render 'app-config' %}
+  Exposes app configuration to window object
+  Reads from app-owned metafield: shop.metafields.app.widget_settings
+{% endcomment %}
+
+{% assign app_config = shop.metafields.app.widget_settings %}
+
+<script>
+  window.__recovery_cart_config__ = {
+    shop: {{ shop.permanent_domain | json }},
+    widgetSettings: {{ app_config | json }},
+    isActive: true
+  };
+</script>

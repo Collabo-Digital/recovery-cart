@@ -64,3 +64,15 @@ model Shop {
   installedAt           DateTime  @default(now())
   uninstalledAt         DateTime?
 }
+
+model WidgetSettings {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  shopDomain            String    @unique // Links to Shop
+  position              String    @default("bottom-right")
+  phoneNumber           String?
+  buttonText            String    @default("Chat with us")
+  buttonColor           Json      // HSB color object
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}

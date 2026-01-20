@@ -1,240 +1,368 @@
-import { useEffect } from "react";
-import { useFetcher } from "react-router";
+import { useState, useEffect, useRef } from "react";
+import { useLoaderData, useActionData, useNavigation, Form } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import {
+  Page,
+  Layout,
+  Card,
+  FormLayout,
+  Select,
+  TextField,
+  ColorPicker,
+  BlockStack,
+  Text,
+  Banner,
+  Box,
+} from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
+import {
+  DEFAULT_SETTINGS,
+  getWidgetSettings,
+  createDefaultSettings,
+  updateWidgetSettings,
+} from "../utils/widgetSettings.server";
+import { getShopId, updateWidgetMetafield } from "../utils/metafield.server";
 
+// Loader: Fetch existing widget settings
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  console.log("=== LOADER START ===");
+  
+  try {
+    const { session, admin } = await authenticate.admin(request);
+    console.log("Session authenticated:", session.shop);
 
-  return null;
-};
+    // Get or create widget settings
+    let widgetSettings = await getWidgetSettings(session.shop);
 
-export const action = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($product: ProductCreateInput!) {
-        productCreate(product: $product) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        product: {
-          title: `${color} Snowboard`,
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
-  const product = responseJson.data.productCreate.product;
-  const variantId = product.variants.edges[0].node.id;
-  const variantResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyReactRouterTemplateUpdateVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-        productVariants {
-          id
-          price
-          barcode
-          createdAt
-        }
+    if (!widgetSettings) {
+      console.log("No settings found, creating defaults");
+      widgetSettings = await createDefaultSettings(session.shop);
+
+      // Also create default metafield
+      try {
+        const shopId = await getShopId(admin);
+        await updateWidgetMetafield(admin, shopId, DEFAULT_SETTINGS);
+        console.log("Default metafield created");
+      } catch (metafieldError) {
+        console.error("Error creating default metafield:", metafieldError);
+        // Don't fail the loader if metafield creation fails
       }
-    }`,
-    {
-      variables: {
-        productId: product.id,
-        variants: [{ id: variantId, price: "100.00" }],
-      },
-    },
-  );
-  const variantResponseJson = await variantResponse.json();
+    }
 
-  return {
-    product: responseJson.data.productCreate.product,
-    variant: variantResponseJson.data.productVariantsBulkUpdate.productVariants,
-  };
+    console.log("Returning settings:", widgetSettings);
+    return {
+      settings: widgetSettings,
+      shop: session.shop,
+    };
+  } catch (error) {
+    console.error("Loader error:", error);
+    throw error;
+  }
 };
 
-export default function Index() {
-  const fetcher = useFetcher();
-  const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
+// Action: Save widget settings
+export const action = async ({ request }) => {
+  console.log("=== ACTION START ===");
+  
+  try {
+    const { session, admin } = await authenticate.admin(request);
+    console.log("✅ Session authenticated:", session.shop);
 
-  useEffect(() => {
-    if (fetcher.data?.product?.id) {
-      shopify.toast.show("Product created");
+    const formData = await request.formData();
+    console.log("📥 Form data received");
+
+    const settingsData = {
+      position: formData.get("position"),
+      phoneNumber: formData.get("phoneNumber") || "",
+      buttonText: formData.get("buttonText"),
+      buttonColor: JSON.parse(formData.get("buttonColor")),
+    };
+
+    console.log("💾 Saving settings:", settingsData);
+
+    // Update database
+    const updatedSettings = await updateWidgetSettings(session.shop, settingsData);
+    console.log("✅ Database updated successfully:", updatedSettings.id);
+
+    // Update metafield
+    try {
+      const shopId = await getShopId(admin);
+      await updateWidgetMetafield(admin, shopId, settingsData);
+      console.log("✅ Metafield updated successfully");
+    } catch (metafieldError) {
+      console.error("❌ Metafield error:", metafieldError);
+      return {
+        success: true,
+        warning: "Settings saved but metafield update failed",
+        settings: updatedSettings,
+      };
     }
-  }, [fetcher.data?.product?.id, shopify]);
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
+
+    console.log("=== ACTION SUCCESS ===");
+    return {
+      success: true,
+      message: "Settings saved successfully",
+      settings: updatedSettings,
+    };
+  } catch (error) {
+    console.error("=== ACTION ERROR ===");
+    console.error("Error:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to save settings",
+    };
+  }
+};
+
+export default function WidgetSettings() {
+  const { settings: initialSettings, shop } = useLoaderData();
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const shopify = useAppBridge();
+  const formRef = useRef(null);
+
+  // Form state
+  const [position, setPosition] = useState(initialSettings.position);
+  const [phoneNumber, setPhoneNumber] = useState(initialSettings.phoneNumber || "");
+  const [buttonText, setButtonText] = useState(initialSettings.buttonText);
+  const [buttonColor, setButtonColor] = useState(initialSettings.buttonColor);
+
+  const isLoading = navigation.state === "submitting";
+
+  // Position options for dropdown
+  const positionOptions = [
+    { label: "Bottom Right", value: "bottom-right" },
+    { label: "Bottom Left", value: "bottom-left" },
+  ];
+
+  // Handle form submission
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("Form submitting");
+    // The form will submit automatically via React Router Form
+  };
+
+  // Handle form reset (discard)
+  const handleReset = (event) => {
+    console.log("Form resetting");
+    setPosition(initialSettings.position);
+    setPhoneNumber(initialSettings.phoneNumber || "");
+    setButtonText(initialSettings.buttonText);
+    setButtonColor(initialSettings.buttonColor);
+  };
+
+  // Handle action result (success/error messages)
+  useEffect(() => {
+    if (actionData) {
+      if (actionData.success) {
+        shopify.toast.show(actionData.message || "Settings saved successfully");
+        // Reset form state to match saved data
+        if (actionData.settings) {
+          setPosition(actionData.settings.position);
+          setPhoneNumber(actionData.settings.phoneNumber || "");
+          setButtonText(actionData.settings.buttonText);
+          setButtonColor(actionData.settings.buttonColor);
+        }
+      } else if (actionData.error) {
+        shopify.toast.show(actionData.error, { isError: true });
+      }
+    }
+  }, [actionData, shopify]);
+
+  // Convert HSB to hex for preview
+  const hsbToHex = (hsb) => {
+    const { hue, saturation, brightness } = hsb;
+    const h = hue;
+    const s = saturation;
+    const v = brightness;
+
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+
+    let r, g, b;
+    if (h < 60) {
+      [r, g, b] = [c, x, 0];
+    } else if (h < 120) {
+      [r, g, b] = [x, c, 0];
+    } else if (h < 180) {
+      [r, g, b] = [0, c, x];
+    } else if (h < 240) {
+      [r, g, b] = [0, x, c];
+    } else if (h < 300) {
+      [r, g, b] = [x, 0, c];
+    } else {
+      [r, g, b] = [c, 0, x];
+    }
+
+    const toHex = (val) => {
+      const hex = Math.round((val + m) * 255).toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    };
+
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
 
   return (
-    <s-page heading="Shopify app template">
-      <s-button slot="primary-action" onClick={generateProduct}>
-        Generate a product
-      </s-button>
+    <Page
+      title="WhatsApp Widget Settings"
+      subtitle={`Shop: ${shop}`}
+    >
+      <Form 
+        method="post" 
+        data-save-bar
+        data-discard-confirmation
+        onSubmit={handleSubmit}
+        onReset={handleReset}
+        ref={formRef}
+      >
+        <BlockStack gap="400">
+          <Layout>
+            <Layout.Section>
+              <Card>
+                <BlockStack gap="400">
+                  <Text variant="headingMd" as="h2">
+                    Widget Configuration
+                  </Text>
 
-      <s-section heading="Congrats on creating a new Shopify app 🎉">
-        <s-paragraph>
-          This embedded app template uses{" "}
-          <s-link
-            href="https://shopify.dev/docs/apps/tools/app-bridge"
-            target="_blank"
-          >
-            App Bridge
-          </s-link>{" "}
-          interface examples like an{" "}
-          <s-link href="/app/additional">additional page in the app nav</s-link>
-          , as well as an{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            Admin GraphQL
-          </s-link>{" "}
-          mutation demo, to provide a starting point for app development.
-        </s-paragraph>
-      </s-section>
-      <s-section heading="Get started with products">
-        <s-paragraph>
-          Generate a product with GraphQL and get the JSON output for that
-          product. Learn more about the{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-            target="_blank"
-          >
-            productCreate
-          </s-link>{" "}
-          mutation in our API references.
-        </s-paragraph>
-        <s-stack direction="inline" gap="base">
-          <s-button
-            onClick={generateProduct}
-            {...(isLoading ? { loading: true } : {})}
-          >
-            Generate a product
-          </s-button>
-          {fetcher.data?.product && (
-            <s-button
-              onClick={() => {
-                shopify.intents.invoke?.("edit:shopify/Product", {
-                  value: fetcher.data?.product?.id,
-                });
-              }}
-              target="_blank"
-              variant="tertiary"
-            >
-              Edit product
-            </s-button>
-          )}
-        </s-stack>
-        {fetcher.data?.product && (
-          <s-section heading="productCreate mutation">
-            <s-stack direction="block" gap="base">
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.product, null, 2)}</code>
-                </pre>
-              </s-box>
+                  <FormLayout>
+                    <input type="hidden" name="position" value={position} />
+                    <input type="hidden" name="phoneNumber" value={phoneNumber} />
+                    <input type="hidden" name="buttonText" value={buttonText} />
+                    <input type="hidden" name="buttonColor" value={JSON.stringify(buttonColor)} />
 
-              <s-heading>productVariantsBulkUpdate mutation</s-heading>
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.variant, null, 2)}</code>
-                </pre>
-              </s-box>
-            </s-stack>
-          </s-section>
-        )}
-      </s-section>
+                    <Select
+                      label="Widget Position"
+                      options={positionOptions}
+                      value={position}
+                      onChange={setPosition}
+                      helpText="Choose where the WhatsApp button appears on your store"
+                      disabled={isLoading}
+                    />
 
-      <s-section slot="aside" heading="App template specs">
-        <s-paragraph>
-          <s-text>Framework: </s-text>
-          <s-link href="https://reactrouter.com/" target="_blank">
-            React Router
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Interface: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/app-home/using-polaris-components"
-            target="_blank"
-          >
-            Polaris web components
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>API: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            GraphQL
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Database: </s-text>
-          <s-link href="https://www.prisma.io/" target="_blank">
-            Prisma
-          </s-link>
-        </s-paragraph>
-      </s-section>
+                    <TextField
+                      label="WhatsApp Phone Number"
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={setPhoneNumber}
+                      placeholder="+1234567890"
+                      helpText="Include country code (e.g., +1 for US, +91 for India)"
+                      autoComplete="tel"
+                      disabled={isLoading}
+                    />
 
-      <s-section slot="aside" heading="Next steps">
-        <s-unordered-list>
-          <s-list-item>
-            Build an{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/getting-started/build-app-example"
-              target="_blank"
-            >
-              example app
-            </s-link>
-          </s-list-item>
-          <s-list-item>
-            Explore Shopify&apos;s API with{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-              target="_blank"
-            >
-              GraphiQL
-            </s-link>
-          </s-list-item>
-        </s-unordered-list>
-      </s-section>
-    </s-page>
+                    <TextField
+                      label="Button Text"
+                      value={buttonText}
+                      onChange={setButtonText}
+                      placeholder="Chat with us"
+                      helpText="Text displayed on the widget button"
+                      autoComplete="off"
+                      disabled={isLoading}
+                    />
+
+                    <Box>
+                      <BlockStack gap="200">
+                        <Text variant="bodyMd" as="p" fontWeight="medium">
+                          Button Color
+                        </Text>
+                        <ColorPicker
+                          onChange={setButtonColor}
+                          color={buttonColor}
+                          disabled={isLoading}
+                        />
+                        <Text variant="bodySm" as="p" tone="subdued">
+                          Choose a color for your WhatsApp button
+                        </Text>
+                      </BlockStack>
+                    </Box>
+                  </FormLayout>
+                </BlockStack>
+              </Card>
+            </Layout.Section>
+
+          <Layout.Section variant="oneThird">
+            <BlockStack gap="400">
+              <Card>
+                <BlockStack gap="400">
+                  <Text variant="headingMd" as="h2">
+                    Preview
+                  </Text>
+
+                  <Box
+                    padding="400"
+                    background="bg-surface-secondary"
+                    borderRadius="200"
+                    minHeight="200px"
+                    position="relative"
+                  >
+                    <Box
+                      position="absolute"
+                      insetBlockEnd="400"
+                      insetInlineEnd={
+                        position === "bottom-right" ? "400" : undefined
+                      }
+                      insetInlineStart={
+                        position === "bottom-left" ? "400" : undefined
+                      }
+                      padding="300"
+                      background="bg-fill"
+                      borderRadius="full"
+                      shadow="md"
+                    >
+                      <Text as="span" tone="magic">
+                        {buttonText || "Chat with us"}
+                      </Text>
+                    </Box>
+                  </Box>
+
+                  <Text variant="bodySm" as="p" tone="subdued">
+                    Color: {hsbToHex(buttonColor)}
+                  </Text>
+                </BlockStack>
+              </Card>
+
+              <Card>
+                <BlockStack gap="200">
+                  <Text variant="headingMd" as="h2">
+                    Setup Guide
+                  </Text>
+                  <Text variant="bodySm" as="p">
+                    1. Add your WhatsApp Business number
+                  </Text>
+                  <Text variant="bodySm" as="p">
+                    2. Choose the widget position
+                  </Text>
+                  <Text variant="bodySm" as="p">
+                    3. Customize the button appearance
+                  </Text>
+                  <Text variant="bodySm" as="p">
+                    4. Click Save to apply changes
+                  </Text>
+                </BlockStack>
+              </Card>
+
+              <Banner tone="info">
+                <Text variant="bodySm" as="p">
+                  The widget will appear on your storefront after you save these
+                  settings and install the theme extension.
+                </Text>
+              </Banner>
+
+              {isLoading && (
+                <Banner tone="warning">
+                  <Text variant="bodySm" as="p">
+                    Saving settings...
+                  </Text>
+                </Banner>
+              )}
+            </BlockStack>
+          </Layout.Section>
+        </Layout>
+      </BlockStack>
+    </Form>
+    </Page>
   );
 }
 

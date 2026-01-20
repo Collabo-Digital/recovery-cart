@@ -1,0 +1,17 @@
+{
+  "ratings": {
+    "stars": {
+      "label": "Ratings"
+    },
+    "home": {
+      "recommendationText": "Recommended Product!"
+    }
+  },
+  "app_config": {
+    "name": "App Config",
+    "description": "App configuration loader",
+    "settings": {
+      "info": "Configure settings from the app admin panel"
+    }
+  }
+}

@@ -1,7 +1,9 @@
 import { Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { AppProvider } from "@shopify/shopify-app-react-router/react";
+import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
+import { AppProvider } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
+import shopifyPolarisStyles from '@shopify/polaris/build/esm/styles.css';
 
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
@@ -10,17 +12,28 @@ export const loader = async ({ request }) => {
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
 
+export function links() {
+  return [
+    {
+      rel: "stylesheet",
+      href: shopifyPolarisStyles,
+    },
+  ];
+}
+
 export default function App() {
   const { apiKey } = useLoaderData();
 
   return (
-    <AppProvider embedded apiKey={apiKey}>
-      <s-app-nav>
-        <s-link href="/app">Home</s-link>
-        <s-link href="/app/additional">Additional page</s-link>
-      </s-app-nav>
-      <Outlet />
-    </AppProvider>
+    <ShopifyAppProvider embedded apiKey={apiKey}>
+      <AppProvider i18n={{}}>
+        <s-app-nav>
+          <s-link href="/app">Home</s-link>
+          <s-link href="/app/additional">Additional page</s-link>
+        </s-app-nav>
+        <Outlet />
+      </AppProvider>
+    </ShopifyAppProvider>
   );
 }
 
