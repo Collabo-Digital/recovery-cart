@@ -3,7 +3,7 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider as ShopifyAppProvider } from "@shopify/shopify-app-react-router/react";
 import { AppProvider } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
-import shopifyPolarisStyles from '@shopify/polaris/build/esm/styles.css';
+import shopifyPolarisStyles from '@shopify/polaris/build/esm/styles.css?url';
 
 export const loader = async ({ request }) => {
   await authenticate.admin(request);
