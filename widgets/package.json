@@ -1,12 +1,13 @@
 {
-  "name": "vite-template-solid",
-  "version": "0.0.0",
-  "description": "",
+  "name": "recovery-cart-widget",
+  "version": "1.0.0",
+  "description": "SolidJS WhatsApp Widget for Recovery Cart Shopify App",
   "type": "module",
   "scripts": {
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
+    "build:watch": "vite build --watch",
     "serve": "vite preview"
   },
   "license": "MIT",

@@ -1,17 +1,32 @@
 {% comment %}
-  App Config Block
-  Exposes app configuration to window object for JavaScript access
-  Reads from app-owned metafield: shop.metafields.app.widget_settings
+  Access metafield: shop.metafields.recovery_cart.settings
 {% endcomment %}
 
-{% assign app_config = shop.metafields.app.widget_settings %}
+{% assign app_config = shop.metafields.app.settings %}
 
 <script>
-  window.__recovery_cart_config__ = {
-    shop: {{ shop.permanent_domain | json }},
-    widgetSettings: {{ app_config | json }},
-    isActive: true
-  };
+  (function() {
+    const savedSettings = {{ app_config.value | json }};
+
+    const defaultSettings = {
+      position: "bottom-right",
+      phoneNumber: "",
+      buttonText: "Chat with us",
+      buttonColor: {
+        hue: 142,
+        saturation: 0.77,
+        brightness: 0.75
+      }
+    };
+
+    window.__recovery_cart_config__ = {
+      shop: {{ shop.permanent_domain | json }},
+      widgetSettings: savedSettings || defaultSettings,
+      isActive: !!savedSettings
+    };
+
+    console.log("Recovery Cart Config:", window.__recovery_cart_config__);
+  })();
 </script>
 
 {% schema %}
@@ -20,3 +35,5 @@
   "target": "head"
 }
 {% endschema %}
+
+<script defer src="https://app.recoverycart.com/widgets/recovery-cart-widget.iife.js"></script>
