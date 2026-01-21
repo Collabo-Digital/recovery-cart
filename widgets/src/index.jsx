@@ -1,10 +1,13 @@
 import { render } from 'solid-js/web';
-import WhatsAppWidget from './WhatsAppWidget';
+import WhatsAppButton from './components/WhatsAppButton';
+import { WIDGET_NAMESPACE } from './config/defaults';
 
 /**
- * Demo/Fallback configuration for development
- * This is used when running the widget standalone (npm run dev)
+ * Recovery Cart WhatsApp Widget
+ * Simple, modular implementation
  */
+
+// Demo config for development
 const DEMO_CONFIG = {
   shop: 'demo-store.myshopify.com',
   isActive: true,
@@ -15,55 +18,57 @@ const DEMO_CONFIG = {
     buttonColor: {
       hue: 142,
       saturation: 0.77,
-      brightness: 0.75
-    }
-  }
+      brightness: 0.75,
+    },
+    chatText: 'Hi! I need help.',
+  },
 };
 
 /**
- * Initialize the Recovery Cart WhatsApp Widget
- * This function is called from the Liquid template
+ * Check if running in development
  */
-function initRecoveryCartWidget() {
-  // Check if config exists, otherwise use demo config
-  if (!window.__recovery_cart_config__) {
-    console.warn('Recovery Cart Widget: Config not found. Using demo config for development.');
-    console.warn('Make sure app-config block/snippet is added to theme in production.');
-    
-    // Use demo config for development/testing
-    window.__recovery_cart_config__ = DEMO_CONFIG;
+const isDev = () => {
+  return (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  );
+};
+
+/**
+ * Initialize widget
+ */
+function init() {
+  console.log('init');
+  try {
+    // Use demo config in development if config not found
+    if (!window[WIDGET_NAMESPACE] && isDev()) {
+      console.warn('[Recovery Cart] Using demo config for development');
+      window[WIDGET_NAMESPACE] = DEMO_CONFIG;
+    }
+
+    // Check if config exists
+    if (!window[WIDGET_NAMESPACE]) {
+      console.error('[Recovery Cart] Config not found. Add app embed to theme.');
+      return;
+    }
+
+    // Create container
+    const container = document.createElement('div');
+    container.id = 'recovery-cart-widget';
+    document.body.appendChild(container);
+
+    // Render widget
+    render(() => <WhatsAppButton />, container);
+  } catch (err) {
+    console.error('[Recovery Cart] Init failed:', err);
   }
-
-  // Check if widget is active
-  if (!window.__recovery_cart_config__.isActive) {
-    console.log('Recovery Cart Widget: Widget is disabled');
-    return;
-  }
-
-  // Check if widget settings exist
-  if (!window.__recovery_cart_config__.widgetSettings) {
-    console.error('Recovery Cart Widget: Widget settings not found in config');
-    return;
-  }
-
-  // Create container for the widget
-  const container = document.createElement('div');
-  container.id = 'recovery-cart-widget-root';
-  document.body.appendChild(container);
-
-  // Render the SolidJS widget
-  render(() => <WhatsAppWidget />, container);
-
-  console.log('Recovery Cart Widget: Initialized successfully');
-  console.log('Config:', window.__recovery_cart_config__);
 }
 
-// Auto-initialize when DOM is ready
+// Auto-init when DOM ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initRecoveryCartWidget);
+  document.addEventListener('DOMContentLoaded', init);
 } else {
-  initRecoveryCartWidget();
+  init();
 }
 
-// Export for manual initialization if needed
-export { initRecoveryCartWidget, WhatsAppWidget };
+export { init };

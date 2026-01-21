@@ -15,16 +15,10 @@
 
 <script>
   (function() {
-    // Debug: Log the raw metafield object (for development)
-    console.group('🔍 Recovery Cart Metafield Debug');
-    console.log('1. Raw metafield object:', {{ app_config | json }});
-    console.log('2. Metafield value (parsed):', {{ app_config.value | json }});
-    console.log('3. Metafield type:', {{ app_config.type | json }});
-    console.log('4. Shop domain:', {{ shop.permanent_domain | json }});
+  
     
     // Parse the actual settings from metafield
     const savedSettings = {{ app_config | json }};
-    console.log('5. Parsed savedSettings:', savedSettings);
 
     // Default fallback settings
     const defaultSettings = {
@@ -40,8 +34,6 @@
 
     // Determine which settings to use
     const finalSettings = savedSettings || defaultSettings;
-    console.log('6. Final settings (saved or default):', finalSettings);
-    console.log('7. Using saved settings?', !!savedSettings);
 
     // Create global config for the widget
     window.__recovery_cart_config__ = {
@@ -55,22 +47,6 @@
       }
     };
 
-    console.log('8. Global config created:', window.__recovery_cart_config__);
-    console.groupEnd();
-
-    // Warning if no metafield found
-    if (!savedSettings) {
-      console.warn(
-        '⚠️ No metafield found at shop.metafields.app.settings\n' +
-        'Expected namespace: "app" (app-owned)\n' +
-        'Expected key: "settings"\n' +
-        'Using default settings instead.\n\n' +
-        'To fix:\n' +
-        '1. Ensure metafield is defined in shopify.app.toml\n' +
-        '2. Deploy: npm run deploy\n' +
-        '3. Save settings in your app admin'
-      );
-    }
   })();
 </script>
 

@@ -1,20 +1,45 @@
 {
   "name": "recovery-cart-widget",
   "version": "1.0.0",
-  "description": "SolidJS WhatsApp Widget for Recovery Cart Shopify App",
+  "description": "Production-ready WhatsApp widget for Shopify stores built with SolidJS",
   "type": "module",
+  "main": "./public/widgets/recovery-cart-widget.iife.js",
   "scripts": {
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
     "build:watch": "vite build --watch",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "preview": "vite preview"
   },
+  "keywords": [
+    "shopify",
+    "whatsapp",
+    "widget",
+    "solidjs",
+    "recovery-cart",
+    "customer-support",
+    "chat"
+  ],
+  "author": "Recovery Cart Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/recovery-cart.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/recovery-cart/issues"
+  },
+  "homepage": "https://github.com/your-org/recovery-cart#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "devDependencies": {
     "solid-devtools": "^0.34.3",
     "typescript": "^5.7.2",
     "vite": "^7.1.4",
+    "vite-plugin-css-injected-by-js": "^3.5.2",
     "vite-plugin-solid": "^2.11.8"
   },
   "dependencies": {
