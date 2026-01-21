@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS = {
   phoneNumber: "",
   buttonText: "Chat with us",
   buttonColor: {
-    hue: 142,
+    hue: 120,
     saturation: 0.77,
     brightness: 0.75,
   },

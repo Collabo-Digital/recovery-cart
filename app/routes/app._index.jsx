@@ -96,7 +96,7 @@ export const action = async ({ request }) => {
 };
 
 export default function WidgetSettings() {
-  const { settings: initialSettings } = useLoaderData();
+  const { settings: initialSettings, shop } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
   const shopify = useAppBridge();
@@ -108,6 +108,10 @@ export default function WidgetSettings() {
   const [buttonText, setButtonText] = useState(initialSettings.buttonText);
   const [buttonColor, setButtonColor] = useState(initialSettings.buttonColor);
   const [chatText, setChatText] = useState(initialSettings.chatText);
+  const [appEmbedEnabled, setAppEmbedEnabled] = useState(true);
+
+  // Theme customizer URL for app embeds
+  const themeCustomizerUrl = `https://${shop}/admin/themes/current/editor?context=apps`;
 
   const isLoading = navigation.state === "submitting";
 
@@ -115,6 +119,33 @@ export default function WidgetSettings() {
     { label: "Bottom Right", value: "bottom-right" },
     { label: "Bottom Left", value: "bottom-left" },
   ];
+
+  useEffect(() => {
+    const checkAppEmbed = async () => {
+      try {
+        const response = await fetch("/api/checkAppembed", {
+          method: "POST",
+        });
+        
+        if (!response.ok) {
+          console.error("Failed to check app embed status:", response.status);
+          setAppEmbedEnabled(false);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log("App embed disabled:", data.disabled);
+        
+        // Invert the disabled status to get enabled status
+        setAppEmbedEnabled(!data.disabled);
+      } catch (error) {
+        console.error("Error checking app embed:", error);
+        setAppEmbedEnabled(false);
+      }
+    };
+    
+    checkAppEmbed();
+  }, []);
 
   // Correct way to handle submission in Remix/React Router
   const handleSubmit = () => {
@@ -162,12 +193,14 @@ export default function WidgetSettings() {
   return (
     <Page title="WhatsApp Widget Settings">
       <BlockStack gap="400">
-         <Banner onDismiss={() => {}}>
-      <p>
-       Ensure the &quot;App Embed&quot; is enabled in your Theme Editor for the widget to appear.{' '}
-        <Link url="https://shopify.dev/docs/themes/architecture/sections/app-embed">Learn more</Link>
-      </p>
-    </Banner>
+        {!appEmbedEnabled && (
+          <Banner onDismiss={() => {}}>
+            <p>
+              The app embed is currently disabled. Please enable it in your Theme Editor for the widget to appear on your storefront.{' '}
+              <Link url={themeCustomizerUrl} target="_parent">Enable App Embed</Link>
+            </p>
+          </Banner>
+        )}
         <Layout>
           <Layout.Section>
             <Card>

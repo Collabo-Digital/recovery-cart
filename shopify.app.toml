@@ -22,29 +22,20 @@ api_version = "2024-10"
   topics = ["app/scopes_update"]
   uri = "/webhooks/app/scopes_update"
 
+  [[webhooks.subscriptions]]
+ compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "/webhooks"
+
 [access_scopes]
 # Learn more at
 # https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 # write_products: Required for product management
 # read_metaobject_definitions, write_metaobject_definitions: Required for metaobjects
-scopes = "write_products,read_metaobject_definitions,write_metaobject_definitions"
+scopes = "write_products,read_metaobject_definitions,write_metaobject_definitions,read_themes"
 
 [auth]
 redirect_urls = ["https://example.com/api/auth"]
 
-# -------------------------------------------------------------------
-# App-owned shop metafield definition
-# 
-# This defines a metafield that stores your app's configuration data:
-# - Namespace: "app" (TOML) = "$app" (GraphQL) - Reserved for app-owned data
-# - Key: "settings"
-# - Owner: SHOP resource
-# - Type: json (stores widget configuration as JSON)
-#
-# Access levels:
-# - admin: merchant_read_write - Merchants can view and edit in Shopify Admin
-# - storefront: public_read - Accessible via Storefront API and Liquid templates
-# -------------------------------------------------------------------
 [shop.metafields.app.settings]
 type = "json"
 name = "Recovery cart"
