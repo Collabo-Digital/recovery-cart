@@ -76,7 +76,9 @@
  */
 
 // Metafield configuration constants (matches shopify.app.toml)
-const METAFIELD_NAMESPACE = "recovery_cart";
+// Using $app namespace for app-owned metafields (GraphQL syntax)
+// This corresponds to "app" namespace in shopify.app.toml
+const METAFIELD_NAMESPACE = "$app";
 const METAFIELD_KEY = "settings";
 
 /**

@@ -25,22 +25,30 @@ api_version = "2024-10"
 [access_scopes]
 # Learn more at
 # https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,write_metaobjects"
+# write_products: Required for product management
+# read_metaobject_definitions, write_metaobject_definitions: Required for metaobjects
+scopes = "write_products,read_metaobject_definitions,write_metaobject_definitions"
 
 [auth]
 redirect_urls = ["https://example.com/api/auth"]
 
 # -------------------------------------------------------------------
-# App-owned shop metafield definition (recommended style)
-# Namespace: $app
-# Key: settings
-# Owner type: SHOP
+# App-owned shop metafield definition
+# 
+# This defines a metafield that stores your app's configuration data:
+# - Namespace: "app" (TOML) = "$app" (GraphQL) - Reserved for app-owned data
+# - Key: "settings"
+# - Owner: SHOP resource
+# - Type: json (stores widget configuration as JSON)
+#
+# Access levels:
+# - admin: merchant_read_write - Merchants can view and edit in Shopify Admin
+# - storefront: public_read - Accessible via Storefront API and Liquid templates
 # -------------------------------------------------------------------
 [shop.metafields.app.settings]
 type = "json"
-name = "Widget Settings"
-description = "Configuration for the recovery cart widget"
+name = "Recovery cart"
+
 
   [shop.metafields.app.settings.access]
-  admin = "merchant_read_write"
   storefront = "public_read"
