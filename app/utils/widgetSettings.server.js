@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS = {
     saturation: 0.77,
     brightness: 0.75,
   },
+  chatText: "I'm interested in the product",
 };
 
 /**
