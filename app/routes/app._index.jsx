@@ -28,6 +28,7 @@ import {
 import { getShopId, updateWidgetMetafield } from "../utils/metafield.server";
 import { WidgetPreview } from "../components/WidgetPreview";
 import { hsbToHex } from "../utils/colorUtils";
+import { sanitizeText, sanitizePhoneNumber, sanitizeFormData } from "../utils/sanitize";
 
 // Loader: Fetch existing widget settings
 export const loader = async ({ request }) => {
@@ -61,13 +62,16 @@ export const action = async ({ request }) => {
     const { session, admin } = await authenticate.admin(request);
     const formData = await request.formData();
 
-    const settingsData = {
+    const rawSettingsData = {
       position: formData.get("position"),
       phoneNumber: formData.get("phoneNumber") || "",
       buttonText: formData.get("buttonText"),
       buttonColor: JSON.parse(formData.get("buttonColor")),
       chatText: formData.get("chatText"),
     };
+
+    // Sanitize all input data on server-side
+    const settingsData = sanitizeFormData(rawSettingsData);
 
     const updatedSettings = await updateWidgetSettings(session.shop, settingsData);
 
@@ -109,6 +113,19 @@ export default function WidgetSettings() {
   const [buttonColor, setButtonColor] = useState(initialSettings.buttonColor);
   const [chatText, setChatText] = useState(initialSettings.chatText);
   const [appEmbedEnabled, setAppEmbedEnabled] = useState(true);
+
+  // Sanitized setters
+  const handlePhoneNumberChange = (value) => {
+    setPhoneNumber(sanitizePhoneNumber(value));
+  };
+
+  const handleButtonTextChange = (value) => {
+    setButtonText(sanitizeText(value, 50));
+  };
+
+  const handleChatTextChange = (value) => {
+    setChatText(sanitizeText(value, 200));
+  };
 
   // Theme customizer URL for app embeds
   const themeCustomizerUrl = `https://${shop}/admin/themes/current/editor?context=apps`;
@@ -218,26 +235,32 @@ export default function WidgetSettings() {
                     label="WhatsApp Phone Number"
                     type="tel"
                     value={phoneNumber}
-                    onChange={setPhoneNumber}
+                    onChange={handlePhoneNumberChange}
                     placeholder="+1234567890"
                     autoComplete="tel"
                     disabled={isLoading}
+                    helpText="Only numbers, +, -, spaces, and parentheses allowed"
                   />
                   <TextField
                     label="Button Text"
                     value={buttonText}
-                    onChange={setButtonText}
+                    onChange={handleButtonTextChange}
                     placeholder="Chat with us"
                     autoComplete="off"
                     disabled={isLoading}
+                    maxLength={50}
+                    showCharacterCount
                   />
                   <TextField
                     label="Chat Text"
                     value={chatText}
-                    onChange={setChatText}
+                    onChange={handleChatTextChange}
                     placeholder="I'm interested in the product"
                     autoComplete="off"
                     disabled={isLoading}
+                    maxLength={100}
+                    showCharacterCount
+                    multiline={3}
                   />
                   <Box>
                     <BlockStack gap="200">

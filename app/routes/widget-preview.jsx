@@ -7,7 +7,7 @@ import { generatePreviewHTML } from "../utils/previewTemplate";
  * Serves the preview iframe with the widget bundle injected
  */
 export const loader = async () => {
-  // Read widget bundle
+
   let widgetScript = "";
   try {
     const widgetPath = path.resolve("public", "widgets", "recovery-cart-widget.iife.js");
