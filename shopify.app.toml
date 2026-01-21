@@ -2,7 +2,7 @@
 
 client_id = "f4532fcfd39a7d4ad6c44f184d0226dd"
 name = "Recovery Cart"
-application_url = "https://example.com"
+application_url = "https://recovery-cart.vercel.app/"
 embedded = true
 
 [build]
@@ -15,15 +15,15 @@ api_version = "2024-10"
 
   [[webhooks.subscriptions]]
   topics = ["app/uninstalled"]
-  uri = "/webhooks/app/uninstalled"
+  uri = "https://recovery-cart.vercel.app/webhooks/app/uninstalled"
 
   [[webhooks.subscriptions]]
   topics = ["app/scopes_update"]
-  uri = "/webhooks/app/scopes_update"
+  uri = "https://recovery-cart.vercel.app/webhooks/app/scopes_update"
 
   [[webhooks.subscriptions]]
  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
-  uri = "/webhooks"
+  uri = "https://recovery-cart.vercel.app/webhooks"
 
 [access_scopes]
 # Learn more at
@@ -33,7 +33,7 @@ api_version = "2024-10"
 scopes = "write_products,read_metaobject_definitions,write_metaobject_definitions,read_themes"
 
 [auth]
-redirect_urls = ["https://example.com/api/auth"]
+redirect_urls = ["https://recovery-cart.vercel.app/api/auth"]
 
 [shop.metafields.app.settings]
 type = "json"
