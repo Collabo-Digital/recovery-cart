@@ -7,14 +7,14 @@
  */
 export const sanitizePhone = (phone) => {
   if (!phone) return '';
-  
+
   let clean = phone.replace(/[^0-9+]/g, '');
-  
+
   // Keep + only at start
   if (clean.includes('+')) {
     clean = '+' + clean.replace(/\+/g, '');
   }
-  
+
   return clean;
 };
 
@@ -38,7 +38,7 @@ export const hsbToRgb = (hsb) => {
     else if (h < 180) [r, g, b] = [0, c, x];
     else if (h < 240) [r, g, b] = [0, x, c];
     else if (h < 300) [r, g, b] = [x, 0, c];
-    else [r, g, b] = [c, 0, x];
+    else[r, g, b] = [c, 0, x];
 
     return {
       r: Math.round((r + m) * 255),
@@ -52,6 +52,17 @@ export const hsbToRgb = (hsb) => {
 };
 
 /**
+ * Check if current page is a product page
+ * @returns {boolean}
+ */
+const isProductPage = () => {
+  // Check if we're on Shopify product page
+  // Common patterns: /products/, /collections/.../products/
+  const path = window.location.pathname;
+  return path.includes('/products/');
+};
+
+/**
  * Build WhatsApp URL
  * @param {string} phone - Sanitized phone number
  * @param {string} message - Optional chat text (can be empty/null)
@@ -59,12 +70,33 @@ export const hsbToRgb = (hsb) => {
  */
 export const buildWhatsAppUrl = (phone, message = '') => {
   let url = `https://wa.me/${phone}`;
-  
-  // Only add text parameter if message exists and is not empty
+
+  // Build the message text
+  let messageText = '';
+
+  // Add custom message if provided
   if (message && typeof message === 'string' && message.trim().length > 0) {
-    url += `?text=${encodeURIComponent(message.trim())}`;
+    messageText = message.trim();
   }
-  
+
+  // If on product page, append the product URL
+  if (isProductPage()) {
+    const productUrl = window.location.href;
+
+    if (messageText) {
+      // Add product URL after the custom message
+      messageText += `\n\nProduct: ${productUrl}`;
+    } else {
+      // Just send the product URL
+      messageText = `${productUrl}`;
+    }
+  }
+
+  // Add text parameter if we have a message
+  if (messageText) {
+    url += `?text=${encodeURIComponent(messageText)}`;
+  }
+
   return url;
 };
 
@@ -73,8 +105,8 @@ export const buildWhatsAppUrl = (phone, message = '') => {
  */
 export const log = (type, message, data) => {
   const prefix = '[Recovery Cart]';
-  const isDev = window.location.hostname === 'localhost' || 
-                window.location.hostname === '127.0.0.1';
+  const isDev = window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
 
   // Always log errors and warnings
   if (type === 'error' || type === 'warn') {

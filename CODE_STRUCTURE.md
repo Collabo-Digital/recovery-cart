@@ -133,12 +133,14 @@ recovery-cart/
 - Renders floating button
 - Opens WhatsApp on click
 - Validates configuration
+- Automatically includes product URL on product pages
 
 **Features**:
 - Responsive design
 - Icon-only mode for small screens
 - Smooth animations
 - Position control (left/right)
+- **Auto-detects product pages** and includes URL in message
 
 ## Data Flow
 

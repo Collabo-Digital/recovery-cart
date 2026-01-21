@@ -28,6 +28,8 @@ npm run dev
 |----------|-------------|
 | `CODE_STRUCTURE.md` | Complete codebase guide |
 | `REFACTORING_SUMMARY.md` | What was changed and why |
+| `docs/PRODUCT_URL_FEATURE.md` | Product URL auto-detection feature |
+| `docs/CSS_NAMESPACING.md` | CSS isolation and conflict prevention |
 | `docs/preview/README.md` | Preview feature docs index |
 | `docs/preview/PREVIEW_SIMPLE_GUIDE.md` | User guide for preview |
 | `docs/preview/TROUBLESHOOTING_SIMPLE.md` | Common issues and fixes |

@@ -16,6 +16,7 @@ import {
   Box,
   Button,
   InlineStack,
+  Link,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import {
@@ -161,6 +162,12 @@ export default function WidgetSettings() {
   return (
     <Page title="WhatsApp Widget Settings">
       <BlockStack gap="400">
+         <Banner onDismiss={() => {}}>
+      <p>
+       Ensure the &quot;App Embed&quot; is enabled in your Theme Editor for the widget to appear.{' '}
+        <Link url="https://shopify.dev/docs/themes/architecture/sections/app-embed">Learn more</Link>
+      </p>
+    </Banner>
         <Layout>
           <Layout.Section>
             <Card>
@@ -232,12 +239,6 @@ export default function WidgetSettings() {
                   <Text variant="bodySm" as="p">3. Save and check your storefront</Text>
                 </BlockStack>
               </Card>
-
-              <Banner tone="info">
-                <Text variant="bodySm" as="p">
-                  Ensure the &quot;App Embed&quot; is enabled in your Theme Editor for the widget to appear.
-                </Text>
-              </Banner>
             </BlockStack>
           </Layout.Section>
         </Layout>

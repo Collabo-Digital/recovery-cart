@@ -1,6 +1,6 @@
 /* WhatsApp Widget Button Styles - Small Floating Design */
 
-.whatsapp-widget {
+.recovery-cart .whatsapp-widget {
   position: fixed;
   bottom: 20px;
   z-index: 999999;
@@ -23,7 +23,7 @@
 }
 
 /* Icon-only mode (when no button text) */
-.whatsapp-widget.icon-only {
+.recovery-cart .whatsapp-widget.icon-only {
   padding: 12px;
   border-radius: 50%;
   width: 48px;
@@ -31,30 +31,30 @@
   gap: 0;
 }
 
-.whatsapp-widget:hover {
+.recovery-cart .whatsapp-widget:hover {
   transform: translateY(-3px) scale(1.05);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.whatsapp-widget:active {
+.recovery-cart .whatsapp-widget:active {
   transform: translateY(0) scale(0.98);
 }
 
-.whatsapp-widget.bottom-left {
+.recovery-cart .whatsapp-widget.bottom-left {
   left: 20px;
 }
 
-.whatsapp-widget.bottom-right {
+.recovery-cart .whatsapp-widget.bottom-right {
   right: 20px;
 }
 
-.whatsapp-icon {
+.recovery-cart .whatsapp-icon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
 }
 
-.whatsapp-text {
+.recovery-cart .whatsapp-text {
   white-space: nowrap;
   user-select: none;
 }
@@ -72,60 +72,60 @@
 }
 
 /* Accessibility */
-.whatsapp-widget:focus-visible {
+.recovery-cart .whatsapp-widget:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.5);
   outline-offset: 2px;
 }
 
 /* Mobile responsive */
 @media (max-width: 640px) {
-  .whatsapp-widget {
+  .recovery-cart .whatsapp-widget {
     bottom: 16px;
     padding: 10px 14px;
     font-size: 12px;
     gap: 6px;
   }
 
-  .whatsapp-widget.icon-only {
+  .recovery-cart .whatsapp-widget.icon-only {
     padding: 10px;
     width: 44px;
     height: 44px;
   }
 
-  .whatsapp-widget.bottom-left {
+  .recovery-cart .whatsapp-widget.bottom-left {
     left: 16px;
   }
 
-  .whatsapp-widget.bottom-right {
+  .recovery-cart .whatsapp-widget.bottom-right {
     right: 16px;
   }
 
-  .whatsapp-icon {
+  .recovery-cart .whatsapp-icon {
     width: 18px;
     height: 18px;
   }
 
-  .whatsapp-widget.icon-only .whatsapp-icon {
+  .recovery-cart .whatsapp-widget.icon-only .whatsapp-icon {
     width: 20px;
     height: 20px;
   }
 }
 
 /* Very small screens - compact icon only */
-@media (max-width: 380px) {
-  .whatsapp-text {
+@media (max-width: 280px) {
+  /* .recovery-cart .whatsapp-text {
     display: none;
-  }
+  } */
 
-  .whatsapp-widget {
+  .recovery-cart .whatsapp-widget {
     padding: 12px;
-    border-radius: 50%;
+    /* border-radius: 50%;
     width: 48px;
-    height: 48px;
+    height: 48px; */
     justify-content: center;
   }
 
-  .whatsapp-icon {
+  .recovery-cart .whatsapp-icon {
     width: 20px;
     height: 20px;
   }
