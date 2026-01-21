@@ -25,6 +25,8 @@ import {
   updateWidgetSettings,
 } from "../utils/widgetSettings.server";
 import { getShopId, updateWidgetMetafield } from "../utils/metafield.server";
+import { WidgetPreview } from "../components/WidgetPreview";
+import { hsbToHex } from "../utils/colorUtils";
 
 // Loader: Fetch existing widget settings
 export const loader = async ({ request }) => {
@@ -93,7 +95,7 @@ export const action = async ({ request }) => {
 };
 
 export default function WidgetSettings() {
-  const { settings: initialSettings, shop } = useLoaderData();
+  const { settings: initialSettings } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
   const shopify = useAppBridge();
@@ -147,26 +149,13 @@ export default function WidgetSettings() {
     }
   }, [actionData, shopify]);
 
-  const hsbToHex = (hsb) => {
-    const { hue, saturation, brightness } = hsb;
-    const h = hue;
-    const s = saturation;
-    const v = brightness;
-    const c = v * s;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = v - c;
-    let r, g, b;
-    if (h < 60) [r, g, b] = [c, x, 0];
-    else if (h < 120) [r, g, b] = [x, c, 0];
-    else if (h < 180) [r, g, b] = [0, c, x];
-    else if (h < 240) [r, g, b] = [0, x, c];
-    else if (h < 300) [r, g, b] = [x, 0, c];
-    else [r, g, b] = [c, 0, x];
-    const toHex = (val) => {
-      const hex = Math.round((val + m) * 255).toString(16);
-      return hex.length === 1 ? "0" + hex : hex;
-    };
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  // Prepare config for preview
+  const previewConfig = {
+    position,
+    phoneNumber,
+    buttonText,
+    buttonColor,
+    chatText,
   };
 
   return (
@@ -230,24 +219,10 @@ export default function WidgetSettings() {
 
           <Layout.Section variant="oneThird">
             <BlockStack gap="400">
-              <Card>
-                <BlockStack gap="400">
-                  <Text variant="headingMd" as="h2">Preview</Text>
-                  <Box padding="400" background="bg-surface-secondary" borderRadius="200" minHeight="150px" position="relative">
-                    <Box
-                      position="absolute"
-                      insetBlockEnd="400"
-                      insetInlineEnd={position === "bottom-right" ? "400" : undefined}
-                      insetInlineStart={position === "bottom-left" ? "400" : undefined}
-                      padding="200"
-                      style={{ backgroundColor: hsbToHex(buttonColor), borderRadius: '20px', color: 'white' }}
-                    >
-                      <Text as="span">{buttonText || "Chat with us"}</Text>
-                    </Box>
-                  </Box>
-                  <Text variant="bodySm" as="p" tone="subdued">Color: {hsbToHex(buttonColor)}</Text>
-                </BlockStack>
-              </Card>
+              <WidgetPreview 
+                config={previewConfig}
+                colorHex={hsbToHex(buttonColor)}
+              />
 
               <Card>
                 <BlockStack gap="200">
@@ -260,7 +235,7 @@ export default function WidgetSettings() {
 
               <Banner tone="info">
                 <Text variant="bodySm" as="p">
-                  Ensure the "App Embed" is enabled in your Theme Editor for the widget to appear.
+                  Ensure the &quot;App Embed&quot; is enabled in your Theme Editor for the widget to appear.
                 </Text>
               </Banner>
             </BlockStack>
