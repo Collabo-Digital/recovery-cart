@@ -1,8 +1,7 @@
-# Learn more about configuring your app at
-# https://shopify.dev/docs/apps/tools/cli/configuration
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "dfe186df5c1666d4a3d44dcaab4b32f6"
-name = "recovery-cart"
+client_id = "f4532fcfd39a7d4ad6c44f184d0226dd"
+name = "Recovery Cart"
 application_url = "https://example.com"
 embedded = true
 
