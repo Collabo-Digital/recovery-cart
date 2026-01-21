@@ -14,30 +14,31 @@ function WhatsAppButton() {
   // Initialize on mount
   onMount(() => {
     try {
+      console.log('[WhatsAppButton] Starting mount...');
       // Get config from window
       const appConfig = window[WIDGET_NAMESPACE];
+      console.log('[WhatsAppButton] appConfig:', appConfig);
       
       if (!appConfig) {
         log('error', 'Config not found');
+        console.log('[WhatsAppButton] No config found');
         return;
       }
 
-      // Check if active
-      if (appConfig.isActive === false) {
-        log('log', 'Widget disabled');
-        return;
-      }
 
       // Check settings exist
       if (!appConfig.widgetSettings) {
         log('error', 'Settings missing');
+        console.log('[WhatsAppButton] Settings missing');
         return;
       }
 
       // Validate
       const validation = validateConfig(appConfig.widgetSettings);
+      console.log('[WhatsAppButton] Validation result:', validation);
       if (!validation.valid) {
         log('error', 'Invalid config', validation.errors.join(', '));
+        console.log('[WhatsAppButton] Invalid config:', validation.errors);
         return;
       }
 
@@ -46,11 +47,14 @@ function WhatsAppButton() {
         ...DEFAULT_CONFIG,
         ...appConfig.widgetSettings,
       };
+      console.log('[WhatsAppButton] Final config:', finalConfig);
 
       setConfig(finalConfig);
       setVisible(true);
+      console.log('[WhatsAppButton] Config and visible set to true');
       log('log', 'Widget ready');
     } catch (err) {
+      console.error('[WhatsAppButton] Init error:', err);
       log('error', 'Init failed', err.message);
     }
   });
@@ -92,9 +96,9 @@ function WhatsAppButton() {
     const cfg = config();
     return cfg?.buttonText && cfg.buttonText.trim().length > 0;
   };
-
+  
   return (
-    <Show when={visible() && config()}>
+    <Show when={ config()}>
       <div className="recovery-cart">
         <button
           className={`whatsapp-widget ${config().position} ${!hasButtonText() ? 'icon-only' : ''}`}
