@@ -37,3 +37,4 @@ name = "Recovery cart"
 
   [shop.metafields.app.settings.access]
   storefront = "public_read"
+  admin = "merchant_read_write"
