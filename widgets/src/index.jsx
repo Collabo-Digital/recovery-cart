@@ -52,6 +52,13 @@ function init() {
       return;
     }
 
+    // Check if widget already exists and remove it
+    const existingWidget = document.getElementById('recovery-cart-widget');
+    if (existingWidget) {
+      console.log('[Recovery Cart] Removing existing widget');
+      existingWidget.remove();
+    }
+
     // Create container
     const container = document.createElement('div');
     container.id = 'recovery-cart-widget';
