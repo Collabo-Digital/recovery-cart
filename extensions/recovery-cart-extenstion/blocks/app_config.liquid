@@ -1,5 +1,7 @@
 
+
 {% assign app_config = shop.metafields.app--313999228929.settings.value %}
+
 
 <script>
   (function() {
@@ -34,6 +36,7 @@
       }
     };
 
+    window.dispatchEvent(new CustomEvent('RECOVERY_CART_CONFIG_LOADED'));
   })();
 </script>
 

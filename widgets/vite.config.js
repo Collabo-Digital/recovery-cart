@@ -15,6 +15,10 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    minify: 'esbuild',
+    esbuild: {
+      drop: ['console'],
+    },
     lib: {
       entry: path.resolve(__dirname, 'src/index.jsx'),
       name: 'RecoveryCartWidget',
