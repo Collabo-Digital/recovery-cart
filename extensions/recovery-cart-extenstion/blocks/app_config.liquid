@@ -11,6 +11,7 @@
   The metafield is defined in shopify.app.toml and written via Admin API.
 {% endcomment %}
 
+{% comment %} {% assign app_config = shop.metafields.app--313201623041.settings.value %} {% endcomment %}
 {% assign app_config = shop.metafields.app--313201623041.settings.value %}
 
 <script>
@@ -47,6 +48,7 @@
       }
     };
 
+    window.dispatchEvent(new CustomEvent('RECOVERY_CART_CONFIG_LOADED'));
   })();
 </script>
 

@@ -1,13 +1,10 @@
 import { render } from 'solid-js/web';
+import { createSignal, onMount, Show } from 'solid-js';
 import WhatsAppButton from './components/WhatsAppButton';
 import { WIDGET_NAMESPACE } from './config/defaults';
 
-/**
- * Recovery Cart WhatsApp Widget
- * Simple, modular implementation
- */
+const CONFIG_READY_EVENT = 'RECOVERY_CART_CONFIG_LOADED';
 
-// Demo config for development
 const DEMO_CONFIG = {
   shop: 'demo-store.myshopify.com',
   isActive: true,
@@ -15,60 +12,65 @@ const DEMO_CONFIG = {
     position: 'bottom-right',
     phoneNumber: '+1234567890',
     buttonText: 'Chat with us on WhatsApp',
-    buttonColor: {
-      hue: 142,
-      saturation: 0.77,
-      brightness: 0.75,
-    },
+    buttonColor: { hue: 142, saturation: 0.77, brightness: 0.75 },
     chatText: 'Hi! I need help.',
   },
 };
 
-/**
- * Check if running in development
- */
-const isDev = () => {
-  return (
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
-  );
-};
+const isDev = () =>
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1';
 
 /**
- * Initialize widget
+ * Root: wait for config (already on window or via event), then render widget.
+ * Like a useEffect that watches for config and then renders.
  */
-function init() {
-  console.log('init');
-  try {
-    // Use demo config in development if config not found
-    if (!window[WIDGET_NAMESPACE] && isDev()) {
-      console.warn('[Recovery Cart] Using demo config for development');
+function RecoveryCartRoot() {
+  const [configReady, setConfigReady] = createSignal(!!window[WIDGET_NAMESPACE]);
+
+  onMount(() => {
+    if (configReady()) return;
+
+    if (isDev()) {
       window[WIDGET_NAMESPACE] = DEMO_CONFIG;
-    }
-
-    // Check if config exists
-    if (!window[WIDGET_NAMESPACE]) {
-      console.error('[Recovery Cart] Config not found. Add app embed to theme.');
+      setConfigReady(true);
       return;
     }
 
-    // Create container
+    const onReady = () => {
+      window.removeEventListener(CONFIG_READY_EVENT, onReady);
+      setConfigReady(true);
+    };
+    window.addEventListener(CONFIG_READY_EVENT, onReady);
+  });
+
+  return (
+    <Show when={configReady()} fallback={null}>
+      <WhatsAppButton />
+    </Show>
+  );
+}
+
+function init() {
+  try {
+    if (document.getElementById('recovery-cart-widget')) return;
     const container = document.createElement('div');
     container.id = 'recovery-cart-widget';
     document.body.appendChild(container);
-
-    // Render widget
-    render(() => <WhatsAppButton />, container);
+    render(() => <RecoveryCartRoot />, container);
   } catch (err) {
     console.error('[Recovery Cart] Init failed:', err);
   }
 }
 
-// Auto-init when DOM ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
+function runWhenReady(fn) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fn);
+  } else {
+    fn();
+  }
 }
 
-export { init };
+runWhenReady(init);
+
+export { init }; 

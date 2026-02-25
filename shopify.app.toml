@@ -1,39 +1,34 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "f4532fcfd39a7d4ad6c44f184d0226dd"
-name = "Recovery Cart"
-application_url = "https://recovery-cart.vercel.app/"
+client_id = "dfe186df5c1666d4a3d44dcaab4b32f6"
+name = "recovery-cart"
+application_url = "https://example.com"
 embedded = true
-
-[build]
-automatically_update_urls_on_dev = true
 
 [webhooks]
 api_version = "2024-10"
 
   [[webhooks.subscriptions]]
-  topics = ["app/uninstalled"]
-  uri = "https://recovery-cart.vercel.app/webhooks/app/uninstalled"
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
 
   [[webhooks.subscriptions]]
-  topics = ["app/scopes_update"]
-  uri = "https://recovery-cart.vercel.app/webhooks/app/scopes_update"
-
-  [[webhooks.subscriptions]]
- compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
-  uri = "https://recovery-cart.vercel.app/webhooks"
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
 
 [access_scopes]
-
-scopes = "write_products,read_metaobject_definitions,write_metaobject_definitions,read_themes"
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_metaobject_definitions,read_themes,write_metaobject_definitions,read_customers"
 
 [auth]
-redirect_urls = ["https://recovery-cart.vercel.app/api/auth"]
+redirect_urls = [ "https://example.com/api/auth" ]
 
 [shop.metafields.app.settings]
 type = "json"
 name = "Recovery cart"
 
-
   [shop.metafields.app.settings.access]
   storefront = "public_read"
+
+[build]
+automatically_update_urls_on_dev = true
