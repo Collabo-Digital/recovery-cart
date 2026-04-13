@@ -16,7 +16,6 @@ import {
   Box,
   Button,
   InlineStack,
-  Link,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import {
@@ -113,6 +112,7 @@ export default function WidgetSettings() {
   const [buttonColor, setButtonColor] = useState(initialSettings.buttonColor);
   const [chatText, setChatText] = useState(initialSettings.chatText);
   const [appEmbedEnabled, setAppEmbedEnabled] = useState(true);
+  const [deepLinkUrl, setDeepLinkUrl] = useState(null);
 
   // Sanitized setters
   const handlePhoneNumberChange = (value) => {
@@ -127,8 +127,7 @@ export default function WidgetSettings() {
     setChatText(sanitizeText(value, 200));
   };
 
-  // Theme customizer URL for app embeds
-  const themeCustomizerUrl = `https://${shop}/admin/themes/current/editor?context=apps`;
+  const themeEditorUrl = deepLinkUrl || `https://${shop}/admin/themes/current/editor?context=apps`;
 
   const isLoading = navigation.state === "submitting";
 
@@ -152,9 +151,12 @@ export default function WidgetSettings() {
         
         const data = await response.json();
         console.log("App embed disabled:", data.disabled);
-        
-        // Invert the disabled status to get enabled status
+
         setAppEmbedEnabled(!data.disabled);
+
+        if (data.deepLinkUrl) {
+          setDeepLinkUrl(data.deepLinkUrl);
+        }
       } catch (error) {
         console.error("Error checking app embed:", error);
         setAppEmbedEnabled(false);
@@ -211,10 +213,20 @@ export default function WidgetSettings() {
     <Page title="WhatsApp Widget Settings">
       <BlockStack gap="400">
         {!appEmbedEnabled && (
-          <Banner onDismiss={() => {}}>
+          <Banner
+            title="App embed is disabled"
+            tone="warning"
+            action={{
+              content: "Enable App Embed",
+              onAction: () => {
+                window.top.location.href = themeEditorUrl;
+              },
+            }}
+          >
             <p>
-              The app embed is currently disabled. Please enable it in your Theme Editor for the widget to appear on your storefront.{' '}
-              <Link url={themeCustomizerUrl} target="_parent">Enable App Embed</Link>
+              The widget won't appear on your storefront until the app embed
+              is enabled. Click the button to open the Theme Editor and
+              activate it.
             </p>
           </Banner>
         )}
