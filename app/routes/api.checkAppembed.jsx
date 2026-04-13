@@ -1,7 +1,14 @@
 import { authenticate } from "../shopify.server";
 
+const APP_API_KEY = process.env.SHOPIFY_API_KEY || "";
+const APP_EMBED_HANDLE = "app_config";
+
+function buildDeepLinkUrl(shop) {
+  return `https://${shop}/admin/themes/current/editor?context=apps&template=index&activateAppId=${APP_API_KEY}/${APP_EMBED_HANDLE}`;
+}
+
 /**
- * GET /api/checkAppembed - Check if app embed is enabled on the main theme
+ * POST /api/checkAppembed - Check if app embed is enabled on the main theme
  */
 export const action = async ({ request }) => {
   try {
@@ -17,6 +24,8 @@ export const action = async ({ request }) => {
         { status: 401 }
       );
     }
+
+    const deepLinkUrl = buildDeepLinkUrl(session.shop);
 
     console.log("✅ Checking app embed status for:", session.shop);
 
@@ -43,9 +52,9 @@ export const action = async ({ request }) => {
       console.log("❌ No main theme found");
       return new Response(
         JSON.stringify({
-          success: false,
+          disabled: true,
+          deepLinkUrl,
           error: "No main theme found",
-          appEmbedEnabled: false,
         }),
         { status: 404 }
       );
@@ -76,9 +85,9 @@ export const action = async ({ request }) => {
       console.error("❌ Network error fetching settings_data.json:", e);
       return new Response(
         JSON.stringify({
-          success: false,
+          disabled: true,
+          deepLinkUrl,
           error: "Network error fetching settings_data.json",
-          appEmbedEnabled: false,
         }),
         { status: 500 }
       );
@@ -92,9 +101,9 @@ export const action = async ({ request }) => {
       );
       return new Response(
         JSON.stringify({
-          success: false,
+          disabled: true,
+          deepLinkUrl,
           error: `Shopify API error ${settingsResponse.status}`,
-          appEmbedEnabled: false,
         }),
         { status: 500 }
       );
@@ -107,9 +116,9 @@ export const action = async ({ request }) => {
       console.log("❌ settings_data.json has no value");
       return new Response(
         JSON.stringify({
-          success: false,
+          disabled: true,
+          deepLinkUrl,
           error: "settings_data.json missing or empty",
-          appEmbedEnabled: false,
         }),
         { status: 200 }
       );
@@ -123,9 +132,9 @@ export const action = async ({ request }) => {
       console.error("❌ Error parsing settings_data.json:", parseError);
       return new Response(
         JSON.stringify({
-          success: false,
+          disabled: true,
+          deepLinkUrl,
           error: "Failed to parse settings_data.json",
-          appEmbedEnabled: false,
         }),
         { status: 500 }
       );
@@ -162,6 +171,7 @@ export const action = async ({ request }) => {
     return new Response(
       JSON.stringify({
         disabled,
+        deepLinkUrl,
       }),
       { status: 200 }
     );
@@ -174,5 +184,6 @@ export const action = async ({ request }) => {
       }),
       { status: 500 }
     );
+
   }
 };
