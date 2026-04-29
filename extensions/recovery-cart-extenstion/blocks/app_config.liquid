@@ -1,23 +1,11 @@
-{% comment %}
-  Recovery Cart App Configuration
-  
-  This block loads widget settings from an app-owned metafield:
-  - Namespace: app (app-owned metafield)
-  - Key: settings
-  - Type: json
-  
-  Access path: shop.metafields.app.settings
-  
-  The metafield is defined in shopify.app.toml and written via Admin API.
-{% endcomment %}
 
-{% comment %} {% assign app_config = shop.metafields.app--313201623041.settings.value %} {% endcomment %}
-{% assign app_config = shop.metafields.app--313201623041.settings.value %}
+
+{% assign app_config = shop.metafields.app--313999228929.settings.value %}
+
 
 <script>
   (function() {
   
-    
     // Parse the actual settings from metafield
     const savedSettings = {{ app_config | json }};
 
