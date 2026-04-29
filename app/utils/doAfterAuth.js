@@ -1,4 +1,5 @@
 import prisma from "../db.server";
+import { sendSlackInstallNotification } from "./slack.server";
 
 export const doTaskAfterAuth = async ({ session, admin }) => {
     console.log("DO TASK AFTER AUTH PROCESS", session);
@@ -23,6 +24,18 @@ export const doTaskAfterAuth = async ({ session, admin }) => {
             name
             email
             contactEmail
+            shopOwnerName
+            billingAddress  {
+              address1
+              address2
+              city
+              province
+              zip
+              country
+              latitude
+              longitude
+              phone
+            }
             plan {
               displayName
               partnerDevelopment
@@ -73,6 +86,9 @@ export const doTaskAfterAuth = async ({ session, admin }) => {
                     planDisplayName: shop.plan?.displayName || null,
                     partnerDevelopment: shop.plan?.partnerDevelopment || false,
                     shopifyPlus: shop.plan?.shopifyPlus || false,
+                    shopOwnerName: shop.shopOwnerName || null,
+                    billingAddress: shop.billingAddress || null,
+
 
                     // App specific
                     isActive: true,
@@ -90,6 +106,8 @@ export const doTaskAfterAuth = async ({ session, admin }) => {
                     planDisplayName: shop.plan?.displayName || null,
                     partnerDevelopment: shop.plan?.partnerDevelopment || false,
                     shopifyPlus: shop.plan?.shopifyPlus || false,
+                    shopOwnerName: shop.shopOwnerName || null,
+                    billingAddress: shop.billingAddress || null,
 
                     // App specific
                     isActive: true,
@@ -102,6 +120,8 @@ export const doTaskAfterAuth = async ({ session, admin }) => {
                 shopDomain: savedShop.shopDomain,
                 name: savedShop.name
             });
+
+            sendSlackInstallNotification(savedShop);
 
             return savedShop;
 

@@ -52,6 +52,8 @@ model Shop {
   planDisplayName       String?
   partnerDevelopment    Boolean   @default(false)
   shopifyPlus           Boolean   @default(false)
+  shopOwnerName         String?
+  billingAddress        Json?
   
   
   // Timestamps
