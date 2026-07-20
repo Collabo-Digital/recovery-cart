@@ -28,12 +28,7 @@
     window.__recovery_cart_config__ = {
       shop: {{ shop.permanent_domain | json }},
       widgetSettings: finalSettings,
-      isActive: !!savedSettings,
-      debug: {
-        metafieldExists: {% if app_config %}true{% else %}false{% endif %},
-        metafieldValue: {{ app_config.value | json }},
-        usingDefaults: !savedSettings
-      }
+      isActive: !!savedSettings
     };
 
     window.dispatchEvent(new CustomEvent('RECOVERY_CART_CONFIG_LOADED'));
@@ -47,4 +42,4 @@
 }
 {% endschema %}
 
-<script defer src="https://recovery-cart.vercel.app/widgets/recovery-cart-widget.iife.js"></script>
+<script src="{{ 'recovery-cart-widget.iife.js' | asset_url }}" defer></script>
