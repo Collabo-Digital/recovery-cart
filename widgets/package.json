@@ -8,6 +8,7 @@
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "node -e \"require('fs').copyFileSync('../extensions/recovery-cart-extenstion/assets/recovery-cart-widget.iife.js','../public/widgets/recovery-cart-widget.iife.js')\"",
     "build:watch": "vite build --watch",
     "serve": "vite preview",
     "preview": "vite preview"
