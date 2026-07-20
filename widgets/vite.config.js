@@ -4,21 +4,23 @@ import devtools from 'solid-devtools/vite';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
-    devtools({ autoname: true }),
+    // dev-server only — keep devtools out of the production bundle
+    command === 'serve' && devtools({ autoname: true }),
     solidPlugin(),
     cssInjectedByJsPlugin()
   ],
   server: {
     port: 3000,
   },
+  // must be top-level: Vite ignores `build.esbuild`
+  esbuild: {
+    drop: ['console', 'debugger'],
+  },
   build: {
     target: 'esnext',
     minify: 'esbuild',
-    esbuild: {
-      drop: ['console'],
-    },
     lib: {
       entry: path.resolve(__dirname, 'src/index.jsx'),
       name: 'RecoveryCartWidget',
@@ -31,7 +33,8 @@ export default defineConfig({
         inlineDynamicImports: true,
       }
     },
-    outDir: '../public/widgets',
+    // emit into the theme extension so Shopify CDN serves it
+    outDir: '../extensions/recovery-cart-extenstion/assets',
     emptyOutDir: false,
   },
-});
+}));
