@@ -2,7 +2,7 @@
 
 client_id = "f4532fcfd39a7d4ad6c44f184d0226dd"
 name = "Recovery Cart"
-application_url = "https://recovery-cart.vercel.app/"
+application_url = "https://recovery-cart-one.vercel.app/"
 embedded = true
 
 [webhooks]
@@ -22,10 +22,10 @@ api_version = "2024-10"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_metaobject_definitions,read_themes,write_metaobject_definitions,read_customers"
+scopes = "read_customers,read_metaobject_definitions,read_themes,write_metaobject_definitions"
 
 [auth]
-redirect_urls = [ "https://recovery-cart.vercel.app/api/auth" ]
+redirect_urls = [ "https://recovery-cart-one.vercel.app/api/auth" ]
 
 [shop.metafields.app.settings]
 type = "json"
